@@ -173,3 +173,127 @@ Each AMI contains:
 - Linux SSH protocol, Port 22
 
 [Back to Top](#AWS-SAA-C02-Notes)
+
+### Simple Storage Service (S3) Basics 
+
+* The default storage platform for AWS.
+* Global service but regional based/regionally resilient
+* Public service --> unlimited data, users, scale 
+* Made up of objects and buckets
+* Great for large scale data storage, distribution or upload. Basically anything where you need to access the whole object at once.
+* Ideal storage input or output for other AWS services.
+
+> :bulb: S3 is object storage, not block storage or network file storage. You cannot mount it as a drive.
+
+**Objects**
+
+* Conceptually the same as files
+* Key = file name
+* Value = Content being stored
+* :rotating_light: **Size of objects can be 0kb to 5TB size.**
+
+**Buckets**
+
+* Primary home region (i.e. you can control where the data is stored and what laws and rules apply to that data)
+* Blast radius of a region.
+* Bucket names are **globally unique**. Bucket names can have 3-63 characters -- all lowercase, no underscores -- and must start with a lowercase letter number. 
+* Stores unlimited objects (and thus can be of unlimited size)
+* Flat structure (i.e. all files are stored at the root)
+	* It may *look like* there is a structure in the UI, S3 does this if the key is like `/old/Koala1.jpg`. But this is just a UI nicety.
+* :rotating_light: **100 bucket soft limit, 1000 hard limit per account**
+
+[Back to Top](#AWS-SAA-C02-Notes)
+
+### CloudFormation (CFN) Basics
+
+**Infrastructure as Code** (IaC) product in AWS.
+
+At it's base, CFN uses templates written in YAML or JSON. 
+
+Template parts: 
+
+* Resources - All templates must have a list of resources. The resources section tells CFN what to do. 
+* Description - Free text field to provide details of what the template does. If you use a description, it must immediately follow the AWSTemplateFormatVersion. 
+* AWSTemplateFormatVersion - version of CFN you want to use
+* Metadata - Control how resources are displayed in the console UI. 
+* Parameters - Add fields which prompt the user for more information (e.g. the name of a resource)
+* Mappings - Creates lookup tables
+* Conditions - Define conditional logic which can be used within the resources section. 
+* Outputs - Output info once the template is finished running.
+
+CFN allows you to automate deployments, store them in VCS, etc.  
+
+* Template - YAML or JSON file containing, at bare minimum, a list of logical resources. 
+* Stack - Living representation of a template containing all the logical resources.
+* Logical Resources - Resources in a template file.
+* Physical Resources - AWS products or services.
+
+CFN keeps the logical and physical resources in sync.
+
+:rotating_light: **For any Logical Resources in the stack, CF will make a corresponding Physical Resources in your AWS account.**
+
+1. A template can be used to create a stack (or multiple stacks), which then creates physical resources.
+2. When a template is update, you can use that to update the stack, which then updates the physical resources.
+3. If you delete a stack, it's logic resources are deleted, which then updates the physical resources.
+
+[Back to Top](#AWS-SAA-C02-Notes)
+
+### CloudWatch Basics
+
+CloudWatch has 3 Main Jobs:
+
+1. Metrics (collection, monitoring, & actions) - data for AWS products, apps, or other cloud resources.
+2. Logs (collection, monitoring, & actions) - logging data for AWS products, app, or any other cloud resources.
+3. Events - AWS service event hub, can trigger an action based on an event or a schedule. 
+
+Some metrics are handled natively w/o any additional configuration, such as CPU Utilization on an EC2 server. Otherwise you'll need to install the CloudWatch agent. 
+
+**Namespaces** 
+
+- Think of  namespace is a container for monitoring data and they contain related metrics. 
+- All AWS data goes into an AWS namespace like so `AWS/service`. For example, for EC2 the namespace would be `AWS/EC2`.
+
+**Metrics**
+
+- A metric is a collection of related datapoints in a time-ordered structure.
+- CPU Utilization, Network In/Out, Disk IO are all examples of metrics.
+- A metric could come from one server or many. Since a **datapoint** is made up of a timestamp an a value, CW uses **dimensions** to separate datapoints for different things or perspectives within the same metric. Dimensions are stored as key/value pair.s 
+- For example, when sending CPU Utilization data for EC2 servers, sends the InstanceId and InstanceType as dimensions.
+
+**Alarms**
+
+- Created and linked to a specific metric. Then based on the alarm configuration, you take an action based on that metric. 
+- There are 3 states: "OK", "ALARM", "INSUFFICIENT_DATA".
+- Usually when the Alarm goes into an "ALARM" state,  an action is taken.
+
+[Back to Top](#AWS-SAA-C02-Notes)
+
+### Shared Responsibility Model
+
+AWS is responsible for security *of* the cloud, the customer is responsible for security *in* the cloud. 
+
+[Back to Top](#AWS-SAA-C02-Notes)
+
+### High-Availability (HA) vs Fault-Tolerance (FT) vs Disaster Recovery (DR)
+
+
+**High-Availability** 
+
+- Aims to ensure an agreed level of operational performance, usually uptime, for a higher than normal period. Basically, maximize a systems time operational.
+- User disruption, though not ideal, is OK. 
+- High availability has a cost and requires planning.
+- An example of high availability is a car with a spare tire. If the tire blows out, you would need to spend time changing the tire (which is a disruption) but it ensures that you don't have to call for assistance and minimizes the time you are out of action.
+
+
+
+**Fault-Tolerance** *(similar but different than high availability)*
+
+- The property that enables a system to continue operating in the event of the failure of some of it's components. Basically, operate through a failure with no customer impact. 
+- Much more complex (and expensive) to implement than high availability.
+- An example of fault tolerance is an airplane engine failure. If an engine fails the plane cannot stop and make repairs, so it comes with more engines than it needs. 
+ 
+**Disaster-Recovery**
+
+- A set of policies, tools and procedures to enable the recovery or continuation of vital technology infrastructure and systems following a natural or human-induced disaster. 
+
+[Back to Top](#AWS-SAA-C02-Notes)

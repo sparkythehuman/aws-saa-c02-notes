@@ -256,9 +256,15 @@ Some metrics are handled natively w/o any additional configuration, such as CPU 
 **Metrics**
 
 - A metric is a collection of related datapoints in a time-ordered structure.
-- CPU Utilization, Network In/Out, Disk IO are all examples of metrics.
-- A metric could come from one server or many. Since a **datapoint** is made up of a timestamp an a value, CW uses **dimensions** to separate datapoints for different things or perspectives within the same metric. Dimensions are stored as key/value pair.s 
-- For example, when sending CPU Utilization data for EC2 servers, sends the InstanceId and InstanceType as dimensions.
+- Examples: 
+	- CPU Utilization
+	- Network In/Out
+	- Disk IO
+- A metric could come from one server or many. Since a **datapoint** is made up of a timestamp an a value, CW uses **dimensions** to separate datapoints for different things or perspectives within the same metric. Dimensions are stored as key/value pairs.
+- Anytime CPU Utilization is reported, the datapoint will report something like:
+	- Timestamp = 2020-01-01T01:01:01Z
+	- Value = 98.3
+- When sending CPU Utilization data for EC2 servers, it also sends the InstanceId and InstanceType as dimensions.
 
 **Alarms**
 
@@ -278,19 +284,86 @@ AWS is responsible for security *of* the cloud, the customer is responsible for 
 
 **High-Availability** 
 
-- Aims to ensure an agreed level of operational performance, usually uptime, for a higher than normal period. Basically, maximize a systems time operational.
+- Aims to ensure an agreed level of operational performance, usually uptime, for a higher than normal period. Basically, maximize a **systems operational time.**
 - User disruption, though not ideal, is OK. 
 - High availability has a cost and requires planning.
 - An example of high availability is a car with a spare tire. If the tire blows out, you would need to spend time changing the tire (which is a disruption) but it ensures that you don't have to call for assistance and minimizes the time you are out of action.
 
 **Fault-Tolerance** *(similar but different than high availability)*
 
-- The property that enables a system to continue operating in the event of the failure of some of it's components. Basically, operate through a failure with no customer impact. 
+- The property that enables a system to continue operating in the event of the failure of some of it's components. Basically, **operate through a failure** with no customer impact. 
 - Much more complex (and expensive) to implement than high availability.
-- An example of fault tolerance is an airplane engine failure. If an engine fails the plane cannot stop and make repairs, so it comes with more engines than it needs. 
+- An example of fault tolerance is an airplane engine failure. If an engine fails the plane cannot stop and make repairs, so it comes with more engines than it needs.
  
 **Disaster-Recovery**
 
-- A set of policies, tools and procedures to enable the recovery or continuation of vital technology infrastructure and systems following a natural or human-induced disaster. 
+- A set of policies, tools and procedures **to enable the recovery or continuation of vital technology infrastructure and systems** following a natural or human-induced disaster.
+- 2 step process:
+	- Pre-planning
+	- DR process
+- Make sure you have plans in place and ready during a disaster so that you're not making a decision in the midst of a disaster.
+- Not just about tech -- it's also about knowledge.
+-Ideally you want to run periodic DR testing (or even Chaos Engineering). 
+- An example of disaster recovery is pilot or passenger ejection systems. Designed to keep the crucial elements of a system safe.
+
+[Back to Top](#AWS-SAA-C02-Notes)
+
+### Domain Name System (DNS)
+
+- DNS is a discovery service. It translates machine into human and vice-versa. 
+	- For example, www.amazon.com translates to 104.98.34.131
+- DNS is basically a huge, distributed, resilient database.
+
+Parts of the DNS System:
+
+* **DNS Client** - device that requests DNS data such as a laptop, phone, tablet, etc
+* **DNS Resolver** - software on a device or a server which queries DNS on your behalf
+* **Zone** - a part of the DNS database (e.g. amazon.com)
+* **Zonefile** - physical database for a zone
+* **Nameserver** - where zonefiles are hosted
+* **DNS Root** - DNS is resolved backwards and the last part of the TLD is the root (such as .com, .org, .uk, etc.). That last part is called the DNS Root. 
+* **Root Hints** - config file on the DNS Resolver that points at the root server IPs and addresses
+* **Root Server** - 13 servers (or server clusters) that host the DNS Root Zone. They are managed by 12 Large Organizations (Verisign manages 2).
+* **Root Zone** - managed by IANA, this points at the TLD authoritative servers
+* **TLD** - Top Level Domains, there are two types: 1) generic (.com, .org, etc.) and 2) country-code (.uk, .us, .eu, etc). 
+* **Records** - act as instructions for the DNS Resolver. Common types are NS, A, AAAA, CNAME, MX, TXT.
+* **TTL** - Time to Live, time in seconds that a DNS query can be cached on the DNS Resolver.
+
+>:bulb: **NOTE:** If you have to do DNS work, lower the TTL days or weeks in advance to avoid caching issues.
+
+**Authority and Delegation**
+
+* DNS is a system of trust. When something is trusted in DNS it's an authority. 
+* The root zone starts as the only thing that's authoritative. 
+* The root zone can delegate part of itself to another entity or zone, then that becomes authoritative for the part that's delegated. 
+* Basically, trust is delegated to another zone until you get to the zone for a particular domain name, which has the record in it for the IP address you are looking for.
+
+**How a DNS Request is resolved:**
+
+1. Your DNS client asks a DNS resolver for the IP address of a given DNS name, for example "www.amazon.com." 
+2. Using the root hints file, the DNS resolver communicates with one or more of the root servers to access the root zone.
+3. The root zone has a record for the NS for the .com zone and it delegates authority to that server. 
+4. The resolver then makes a request to the .com zone, which has a record for the NS for the amazon.com zone. 
+5. Finally, in the amazon.com zone, there a record which maps www to 104.98.34.131. That IP address is what your DNS client needs to communicate with www.amazon.com.  
+
+**Route53 Fundamentals**
+
+* End to end DNS service.
+* Global/Globally Resilient Service (no regions)
+* 2 Main services: 
+	1. Register Domains
+		* Basically you can buy or renew a domain on AWS
+	2. Host Zones
+		* Zone files in AWS
+		* Hosted on 4 managed name servers
+		* Can be public or private. Private zones are linked to VPC(s).
+
+**DNS Record Types**
+
+* **Nameserver (NS)** - server where zone files are hosted.
+* **A and AAAA Records** - map hostnames to IP addresses. A is for IPv4 and AAAA is for IPv6.
+* **Canonical Name (CNAME)** - host to host records, kinda like shortcuts. They cannot point to an IP address, only other names (this can be a trick question on the exam). 
+* **MX Records** - used to find a email server for a domain.  They have two main parts, a priority and a value. The value can be a fully qualified domain name or a subdomain on the same zone. Lower numbers are higher priority.
+* **TXT Records** - used to add arbitrary values to a domain.
 
 [Back to Top](#AWS-SAA-C02-Notes)
